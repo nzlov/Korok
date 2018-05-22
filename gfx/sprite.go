@@ -1,8 +1,8 @@
 package gfx
 
 import (
-	"korok.io/korok/math/f32"
 	"korok.io/korok/engi"
+	"korok.io/korok/math/f32"
 )
 
 // Sprite is Tex2D
@@ -20,9 +20,9 @@ type SpriteComp struct {
 	flipX uint16
 	flipY uint16
 
-	width float32
-	height float32
-	gravity struct{
+	width   float32
+	height  float32
+	gravity struct {
 		x, y float32
 	}
 	visible bool
@@ -84,21 +84,21 @@ func (sc *SpriteComp) Flip(flipX, flipY bool) {
 }
 
 type SpriteTable struct {
-	comps []SpriteComp
-	_map   map[uint32]int
+	comps      []SpriteComp
+	_map       map[uint32]int
 	index, cap int
 }
 
 func NewSpriteTable(cap int) *SpriteTable {
 	return &SpriteTable{
-		cap:cap,
-		_map:make(map[uint32]int),
+		cap:  cap,
+		_map: make(map[uint32]int),
 	}
 }
 
 func (st *SpriteTable) NewComp(entity engi.Entity) (sc *SpriteComp) {
 	if size := len(st.comps); st.index >= size {
-		st.comps = spriteResize(st.comps, size + STEP)
+		st.comps = spriteResize(st.comps, size+STEP)
 	}
 	ei := entity.Index()
 	if v, ok := st._map[ei]; ok {
@@ -111,7 +111,7 @@ func (st *SpriteTable) NewComp(entity engi.Entity) (sc *SpriteComp) {
 	sc.color = 0xFFFFFFFF
 	sc.visible = true
 	st._map[ei] = st.index
-	st.index ++
+	st.index++
 	return
 }
 
@@ -141,7 +141,7 @@ func (st *SpriteTable) Comp(entity engi.Entity) (sc *SpriteComp) {
 func (st *SpriteTable) Delete(entity engi.Entity) {
 	ei := entity.Index()
 	if v, ok := st._map[ei]; ok {
-		if tail := st.index -1; v != tail && tail > 0 {
+		if tail := st.index - 1; v != tail && tail > 0 {
 			st.comps[v] = st.comps[tail]
 			// remap index
 			tComp := &st.comps[tail]
@@ -176,9 +176,9 @@ func spriteResize(slice []SpriteComp, size int) []SpriteComp {
 /////
 type SpriteRenderFeature struct {
 	Stack *StackAllocator
-	id int
+	id    int
 
-	R *BatchRender
+	R  *BatchRender
 	st *SpriteTable
 	xt *TransformTable
 }
@@ -197,12 +197,13 @@ func (f *SpriteRenderFeature) Register(rs *RenderSystem) {
 	for _, r := range rs.RenderList {
 		switch br := r.(type) {
 		case *BatchRender:
-			f.R = br; break
+			f.R = br
+			break
 		}
 	}
 	// init table
 	for _, t := range rs.TableList {
-		switch table := t.(type){
+		switch table := t.(type) {
 		case *SpriteTable:
 			f.st = table
 		case *TransformTable:
@@ -217,14 +218,14 @@ func (f *SpriteRenderFeature) Extract(v *View) {
 	var (
 		camera = v.Camera
 		xt     = f.xt
-		fi = uint32(f.id) << 16
+		fi     = uint32(f.id) << 16
 	)
 	for i, spr := range f.st.comps[:f.st.index] {
 		xf := xt.Comp(spr.Entity)
 		sz := f32.Vec2{spr.width, spr.height}
-		g  := f32.Vec2{spr.gravity.x, spr.gravity.y}
+		g := f32.Vec2{spr.gravity.x, spr.gravity.y}
 
-		if spr.visible && camera.InView(xf,sz , g) {
+		if spr.visible && camera.InView(xf, sz, g) {
 			sid := PackSortId(spr.zOrder.value, spr.batchId.value)
 			val := fi + uint32(i)
 			v.RenderNodes = append(v.RenderNodes, SortObject{sid, val})
@@ -236,7 +237,7 @@ func (f *SpriteRenderFeature) Draw(nodes RenderNodes) {
 	var (
 		st, xt = f.st, f.xt
 		sortId = uint32(0xFFFFFFFF)
-		begin = false
+		begin  = false
 		render = f.R
 	)
 
@@ -288,10 +289,10 @@ type spriteBatchObject struct {
 func (sbo spriteBatchObject) Fill(buf []PosTexColorVertex) {
 	var (
 		srt = sbo.Transform.world
-		p = srt.Position
-		c = sbo.SpriteComp
-		w = sbo.width
-		h = sbo.height
+		p   = srt.Position
+		c   = sbo.SpriteComp
+		w   = sbo.width
+		h   = sbo.height
 	)
 	// Texture
 	rg := c.Sprite.Region()
@@ -330,7 +331,8 @@ func (sbo spriteBatchObject) Fill(buf []PosTexColorVertex) {
 	oy := h * c.gravity.y
 
 	// Transform matrix
-	m := f32.Mat3{}; m.Initialize(p[0], p[1], srt.Rotation, srt.Scale[0], srt.Scale[1], ox, oy, 0,0)
+	m := f32.Mat3{}
+	m.Initialize(p[0], p[1], srt.Rotation, srt.Scale[0], srt.Scale[1], ox, oy, 0, 0)
 
 	// Let's go!
 	buf[0].X, buf[0].Y = m.Transform(0, 0)
@@ -343,5 +345,3 @@ func (sbo spriteBatchObject) Fill(buf []PosTexColorVertex) {
 func (sbo spriteBatchObject) Size() int {
 	return 4
 }
-
-

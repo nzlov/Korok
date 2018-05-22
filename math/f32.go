@@ -1,9 +1,9 @@
 package math
 
 import (
-	"unsafe"
-	"math/rand"
 	"math"
+	"math/rand"
+	"unsafe"
 )
 
 const MaxFloat32 float32 = 3.40282346638528859811704183484516925440e+38
@@ -21,7 +21,7 @@ func InvSqrt(x float32) float32 {
 
 /// a faster way ?
 func Random(low, high float32) float32 {
-	return low + (high - low) * rand.Float32()
+	return low + (high-low)*rand.Float32()
 }
 
 func Max(a, b float32) float32 {
@@ -38,7 +38,7 @@ func Min(a, b float32) float32 {
 	return b
 }
 
-func Clamp(v, left, right float32) float32{
+func Clamp(v, left, right float32) float32 {
 	if v > right {
 		return right
 	}
@@ -64,4 +64,7 @@ func Radian(d float32) float32 {
 // Degree converts radian to degree.
 func Degree(r float32) float32 {
 	return r * 180 / Pi
+}
+func Rotate(x1, y1, x2, y2, a float32) (float32, float32) {
+	return (x1-x2)*Cos(a) - (y1-y2)*Sin(a) + x2, (y1-y2)*Cos(a) - (x1-x2)*Sin(a) + y2
 }
